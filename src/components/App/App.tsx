@@ -5,11 +5,23 @@ import SearchBar from "../SearchBar/SearchBar";
 import type { Movie } from "../../types/movies";
 import { fetchMovies } from "../../services/movieServices";
 import MovieGrid from "../MovieGrid/MovieGrid";
+import Loader from "../Loader/Loader";
+import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import MovieModal from "../MovieModal/MovieModal";
 
 function App() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
+
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+
+  const handleSelectMovie = (movie: Movie) => {
+    setSelectedMovie(movie);
+  };
+  const handleCloseModal = () => {
+    setSelectedMovie(null);
+  };
 
   const handleSearch = async (query: string) => {
     try {
@@ -30,11 +42,15 @@ function App() {
   };
   return (
     <div className={css.app}>
-      <Toaster position="top-right" reverseOrder={false} />
-      <SearchBar onSubmit={handleSearch} /> {isLoading && <p>Loading...</p>}
-      {isError && <p style={{ color: "red" }}>Something went wrong 😢</p>}
+      <Toaster position="top-center" reverseOrder={false} />
+      <SearchBar onSubmit={handleSearch} />
+      {isLoading && <Loader />}
+      {isError && <ErrorMessage />}
       {!isLoading && !isError && movies.length > 0 && (
-        <MovieGrid movies={movies} onSelect={() => {}} />
+        <MovieGrid movies={movies} onSelect={handleSelectMovie} />
+      )}
+      {selectedMovie && (
+        <MovieModal movie={selectedMovie} onClose={handleCloseModal} />
       )}
     </div>
   );
