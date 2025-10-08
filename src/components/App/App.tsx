@@ -1,51 +1,40 @@
 import { useState } from "react";
-import CafeInfo from "../CafeInfo/CafeInfo";
+import toast, { Toaster } from "react-hot-toast";
 import css from "./App.module.css";
-import { type VoteType, type Votes } from "../../types/votes";
-import VoteOptions from "../VoteOptions/VoteOptions";
-import VoteStats from "../VoteStats/VoteStats";
-import Notification from "../Notification/Notification";
+import SearchBar from "../SearchBar/SearchBar";
+import type { Movie } from "../../types/movies";
+import { fetchMovies } from "../../services/movieServices";
+import MovieGrid from "../MovieGrid/MovieGrid";
 
 function App() {
-  const [votes, setVotes] = useState<Votes>({
-    good: 0,
-    neutral: 0,
-    bad: 0,
-  });
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
 
-  const handleVote = (type: VoteType) => {
-    setVotes((prevVotes) => ({
-      ...prevVotes,
-      [type]: prevVotes[type] + 1,
-    }));
+  const handleSearch = async (query: string) => {
+    try {
+      setMovies([]);
+      setIsLoading(true);
+      setIsError(false);
+      const data = await fetchMovies(query);
+      if (data.length === 0) {
+        toast.error("No movies found for your request.");
+        return;
+      }
+      setMovies(data);
+    } catch {
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-  const resetVotes = () => {
-    setVotes({ good: 0, neutral: 0, bad: 0 });
-  };
-
-  const totalVotes = votes.good + votes.neutral + votes.bad;
-
-  const positiveRate = totalVotes
-    ? Math.round((votes.good / totalVotes) * 100)
-    : 0;
-
   return (
     <div className={css.app}>
-      <CafeInfo />
-      <VoteOptions
-        onVote={handleVote}
-        onReset={resetVotes}
-        canReset={totalVotes > 0}
-      />
-      {totalVotes > 0 ? (
-        <VoteStats
-          votes={votes}
-          totalVotes={totalVotes}
-          positiveRate={positiveRate}
-        />
-      ) : (
-        <Notification />
+      <Toaster position="top-right" reverseOrder={false} />
+      <SearchBar onSubmit={handleSearch} /> {isLoading && <p>Loading...</p>}
+      {isError && <p style={{ color: "red" }}>Something went wrong 😢</p>}
+      {!isLoading && !isError && movies.length > 0 && (
+        <MovieGrid movies={movies} onSelect={() => {}} />
       )}
     </div>
   );

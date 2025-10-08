@@ -4,7 +4,7 @@
   font-weight: 400;
 
 
-  color: rgba(255, 255, 255, 0.87);
+  color: #24292e;
   background-color: white;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -24,8 +24,6 @@ a:hover {
 
 body {
   margin: 0;
-
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
